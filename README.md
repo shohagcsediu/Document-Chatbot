@@ -73,16 +73,38 @@ The app will be available at `http://localhost:5000`
 
 ## 📁 Project Structure
 
+
+## 📁 Project Structure
+
 ```
-Document-Chatbot/
+Document Chatbot/
 ├── app.py                 # Main Flask application
 ├── templates/
 │   └── upload.html        # Beautiful UI template
+├── screenshots/           # Screenshots for README
+│   ├── screenshot1.png
+│   ├── screenshot2.png
+│   └── screenshot3.png
 ├── requirements.txt       # Python dependencies
 ├── .env                   # Environment variables (create this)
 ├── .gitignore            # Git ignore file
 └── README.md             # This file
 ```
+
+## 📸 Screenshots
+
+### Main Interface
+![Main Upload Interface](screenshots/screenshot1.png)
+*Beautiful gradient design with drag-and-drop file upload area*
+
+### File Analysis in Progress
+![Analysis Loading](screenshots/screenshot2.png)
+*Loading animation while Gemini AI processes the uploaded file*
+
+### Analysis Results
+![Analysis Results](screenshots/screenshot3.png)
+*AI-generated analysis displayed in a clean, readable format*
+
 
 ## 🎯 Usage
 

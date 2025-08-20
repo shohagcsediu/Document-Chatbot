@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            width: 100%;
+            max-width: 600px;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            background: rgba(102, 126, 234, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-input-wrapper:hover {
+            border-color: #764ba2;
+            background: rgba(118, 75, 162, 0.05);
+            transform: scale(1.02);
+        }
+
+        .file-input-wrapper.dragover {
+            border-color: #764ba2;
+            background: rgba(118, 75, 162, 0.1);
+            transform: scale(1.02);
+        }
+
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-input-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            pointer-events: none;
+        }
+
+        .file-icon {
+            font-size: 3rem;
+            color: #667eea;
+        }
+
+        .file-text {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .file-subtext {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .selected-file {
+            background: rgba(102, 126, 234, 0.1);
+            border: 2px solid #667eea;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .selected-file.show {
+            display: block;
+        }
+
+        .prompt-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .spinner {
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #667eea;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .response-section {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .response-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .response-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px 12px 0 0;
+            font-weight: 600;
+        }
+
+        .response-content {
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .error {
+            background: #fee;
+            border-color: #fcc;
+            color: #c33;
+        }
+
+        .file-info {
+            background: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .file-info strong {
+            color: #0c5460;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Document Chatbot</h1>
+            <p>Upload any file and let AI analyze it for you</p>
+        </div>
+
+        <form class="upload-form" id="uploadForm">
+            <div class="form-group">
+                <label for="file">Choose File</label>
+                <div class="file-input-wrapper" id="fileWrapper">
+                    <input type="file" name="file" id="file" class="file-input" required>
+                    <div class="file-input-content">
+                        <div class="file-icon">📄</div>
+                        <div class="file-text">Click to select or drag and drop</div>
+                        <div class="file-subtext">Supports images, documents, videos, and more</div>
+                    </div>
+                </div>
+                <div class="selected-file" id="selectedFile"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="prompt">Custom Prompt (Optional)</label>
+                <textarea 
+                    class="prompt-input" 
+                    name="prompt" 
+                    id="prompt" 
+                    placeholder="What would you like to know about this file? (Leave empty for default analysis)"
+                    rows="3"
+                ></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <span id="btnText">🚀 Analyze with ai</span>
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing your file with AI...</p>
+        </div>
+
+        <div class="response-section" id="responseSection">
+            <div class="response-header" id="responseHeader">
+                📊 Analysis Results
+            </div>
+            <div class="response-content" id="responseContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('file');
+        const fileWrapper = document.getElementById('fileWrapper');
+        const selectedFile = document.getElementById('selectedFile');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const loading = document.getElementById('loading');
+        const responseSection = document.getElementById('responseSection');
+        const responseHeader = document.getElementById('responseHeader');
+        const responseContent = document.getElementById('responseContent');
+
+        // File drag and drop handling
+        fileWrapper.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileWrapper.classList.add('dragover');
+        });
+
+        fileWrapper.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            fileWrapper.classList.remove('dragover');
+        });
+
+        fileWrapper.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileWrapper.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateSelectedFile(files[0]);
+            }
+        });
+
+        // File selection handling
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                updateSelectedFile(e.target.files[0]);
+            }
+        });
+
+        function updateSelectedFile(file) {
+            selectedFile.innerHTML = `
+                <div class="file-info">
+                    <strong>Selected:</strong> ${file.name}<br>
+                    <strong>Size:</strong> ${formatFileSize(file.size)}<br>
+                    <strong>Type:</strong> ${file.type || 'Unknown'}
+                </div>
+            `;
+            selectedFile.classList.add('show');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Form submission handling
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            btnText.textContent = 'Processing...';
+            loading.style.display = 'block';
+            responseSection.classList.remove('show');
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                // Hide loading
+                loading.style.display = 'none';
+                
+                if (response.ok) {
+                    // Show success response
+                    responseHeader.textContent = `📊 Analysis Results - ${result.filename}`;
+                    responseHeader.className = 'response-header';
+                    
+                    let content = '';
+                    if (result.filename) {
+                        content += `📁 File: ${result.filename}\n`;
+                        content += `📋 Type: ${result.content_type}\n\n`;
+                    }
+                    content += `🤖 Ai Analysis:\n${result.gemini_response}`;
+                    
+                    responseContent.textContent = content;
+                    responseContent.className = 'response-content';
+                } else {
+                    // Show error response
+                    responseHeader.textContent = '❌ Error';
+                    responseHeader.className = 'response-header';
+                    responseContent.textContent = result.error || 'An unknown error occurred';
+                    responseContent.className = 'response-content error';
+                }
+                
+                responseSection.classList.add('show');
+                
+            } catch (error) {
+                // Hide loading
+                loading.style.display = 'none';
+                
+                // Show network error
+                responseHeader.textContent = '❌ Network Error';
+                responseHeader.className = 'response-header';
+                responseContent.textContent = 'Failed to connect to the server. Please try again.';
+                responseContent.className = 'response-content error';
+                responseSection.classList.add('show');
+            } finally {
+                // Reset button
+                submitBtn.disabled = false;
+                btnText.textContent = '🚀 Analyze with ai';
+            }
+        });
+    </script>
+</body>
+</html>

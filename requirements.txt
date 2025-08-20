@@ -1,0 +1,14 @@
+# Flask web framework
+Flask==3.0.0
+
+# Google Generative AI (Gemini) SDK
+google-generativeai==0.3.2
+
+# Environment variable management
+python-dotenv==1.0.0
+
+# WSGI server for production deployment (optional)
+gunicorn==21.2.0
+
+# Additional dependencies that might be useful
+Werkzeug==3.0.1
